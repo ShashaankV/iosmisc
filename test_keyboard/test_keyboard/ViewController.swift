@@ -9,6 +9,8 @@
 import UIKit
 
 class ViewController: UIViewController {
+    
+    var data = [Any]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,15 +27,19 @@ class ViewController: UIViewController {
     @objc func LeftArrowPress(sender: UIKeyCommand) {
 //        if running {
             print("Left")
-//            data.append( ("Left", Date().timeIntervalSinceReferenceDate) )
-//        }
+            data.append( ("Left", Date().timeIntervalSinceReferenceDate) )
+//        print(data)
+      
+      
+        
     }
+
+    
     
     @objc func RightArrowPress(sender: UIKeyCommand) {
         //        if running {
         print("Right")
-        //            data.append( ("Left", Date().timeIntervalSinceReferenceDate) )
-        //        }
+                    data.append( ("Right", Date().timeIntervalSinceReferenceDate) )
     }
     
     override func didReceiveMemoryWarning() {
