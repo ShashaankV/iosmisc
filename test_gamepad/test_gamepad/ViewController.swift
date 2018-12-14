@@ -11,27 +11,45 @@ import GameController
 
 class ViewController: UIViewController {
    
-    var pstate:String!
+    var pstate:Int = -100
+    let comms = Comms()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-//        // Do any additional setup after loading the view, typically from a nib.
-//        print(GCController.startWirelessControllerDiscovery(completionHandler:nil))
-//        self.startWatchingForControllers()
-
+        // Do any additional setup after loading the view, typically from a nib.
+        //start controller observers
         self.setUpControllerObservers()
+        //start splash screen
+        UIScreen.main.brightness = CGFloat(0.5)
+        self.splashscreen0comm()
+        
+        
 
     }
     
+    func splashscreen0comm(){
+        self.view.backgroundColor = UIColor(red: 178/255, green: 0, blue: 0, alpha: 1)
+    }
+
+    func splashscreen1comm(){
+        self.view.backgroundColor = UIColor(red: 178/255, green: 178/255, blue: 0, alpha: 1)
+    }
+
+    func splashscreen2comm(){
+        self.view.backgroundColor = UIColor(red: 0, green: 178/255, blue: 0, alpha: 1)
+    }
+
     func setUpControllerObservers(){
         NotificationCenter.default.addObserver(self,selector: #selector(self.connectControllers), name: NSNotification.Name.GCControllerDidConnect, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.controllerDisconnected), name: NSNotification.Name.GCControllerDidDisconnect, object: nil)
     }
-    
+
    @objc func controllerDisconnected(){
 //        self.paused=true
         print("disconnected")
+    self.splashscreen0comm()
     }
-    
+
    @objc func connectControllers(controller:GCController){
 //        self.paused = false
         for controller in GCController.controllers() {
@@ -43,11 +61,60 @@ class ViewController: UIViewController {
             }
         }
     }
-    
+
     func setUpExtendedController(controller:GCController) {
         controller.extendedGamepad?.valueChangedHandler = {
             (gamepad: GCExtendedGamepad, element:GCControllerElement) in
-            //            if (gamepad.leftThumbstick == element) {
+            if (gamepad.leftShoulder == element){
+                if (gamepad.leftShoulder.isPressed == true) && (self.pstate != 1){
+                    print("leftShoulder pressed")
+                    self.pstate = 1
+                    if self.comms.commL == 0{
+                        self.comms.commL = 1
+                        if self.comms.commR == 1{
+                            self.splashscreen2comm()
+                        }
+                        else {
+                            self.splashscreen1comm()
+                        }
+                    }
+                } else if ( gamepad.leftShoulder.isPressed == false) {
+                    print("leftShoulder released")
+                    self.pstate = -100
+                }
+            }
+            if (gamepad.rightShoulder == element){
+                if (gamepad.rightShoulder.isPressed == true) && (self.pstate != -1){
+                    print("rightShoulder pressed")
+                    self.pstate = -1
+                    if self.comms.commR == 0{
+                        self.comms.commR = 1
+                        if self.comms.commL == 1{
+                            self.splashscreen2comm()
+                        }
+                        else {
+                            self.splashscreen1comm()
+                        }
+                    }
+                } else if ( gamepad.rightShoulder.isPressed == false) {
+                    print("rightShoulder released")
+                    self.pstate = -100
+                }
+            }
+        }
+    }
+
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+}
+
+
+
+//            if (gamepad.leftThumbstick == element) {
 //                if (gamepad.leftThumbstick.left.value > 0.2) {
 //                    print("pressed leftThumbstick left")
 //                } else if (gamepad.leftThumbstick.left.isPressed == false) {
@@ -71,15 +138,7 @@ class ViewController: UIViewController {
 //                    print("let go of dpad left")
 //                }
 //            } else
-        if (gamepad.leftShoulder == element){
-                if (gamepad.leftShoulder.isPressed == true) && (self.pstate != "left"){
-                    print("leftShoulder pressed")
-                    self.pstate = "left"
-                } else if ( gamepad.leftShoulder.isPressed == false) {
-                    print("leftShoulder released")
-                    self.pstate = nil
-                }
-            }
+
 //            else if (gamepad.leftTrigger == element){
 //                if ( gamepad.leftTrigger.isPressed == true){
 //                    print("leftTrigger pressed")
@@ -88,15 +147,7 @@ class ViewController: UIViewController {
 //                }
 //            }
 //            else
-            if (gamepad.rightShoulder == element){
-                if (gamepad.rightShoulder.isPressed == true) && (self.pstate != "right"){
-                    print("rightShoulder pressed")
-                    self.pstate = "right"
-                } else if ( gamepad.rightShoulder.isPressed == false) {
-                    print("rightShoulder released")
-                    self.pstate = nil
-                }
-            }
+
 //            else if (gamepad.rightTrigger == element){
 //                if ( gamepad.rightTrigger.isPressed == true){
 //                    print("rightTrigger pressed")
@@ -128,45 +179,3 @@ class ViewController: UIViewController {
 //                    print("buttonX released")
 //                }
 //            }
-        }
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-
-//
-//    func startWatchingForControllers() {
-//        // Subscribe for the notes
-//        let ctr = NotificationCenter.default
-//        ctr.addObserver(forName: .GCControllerDidConnect, object: nil, queue: .main) { note in
-//            if let ctrl = note.object as? GCController {
-//                self.add(ctrl)
-//                print("connected")
-//                print(GCController.controllers().count)
-//            }
-//        }
-//        ctr.addObserver(forName: .GCControllerDidDisconnect, object: nil, queue: .main) { note in
-//            if let ctrl = note.object as? GCController {
-////                self.remove(ctrl)
-//                print("disconnected")
-//            }
-//        }
-//        // and kick off discovery
-////        GCController.startWirelessControllerDiscovery(completionHandler: {})
-//    }
-//
-//    func add(_ controller: GCController) {
-//        let name = String(describing:controller.vendorName)
-//        if let gamepad = controller.extendedGamepad {
-//            print("connect extended \(name)")
-//        } else if let gamepad = controller.microGamepad {
-//            print("connect micro \(name)")
-//        } else {
-//            print("Huh? \(name)")
-//        }
-//    }
-    
-}
-
